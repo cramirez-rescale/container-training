@@ -1,0 +1,33 @@
+BootStrap: yum
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
+Include: yum
+%setup 
+%files
+%post
+	yum -y update
+	yum -y groupinstall "Development Tools" "Development Libraries"
+	yum -y install gcc gcc-gfortran gcc-c++ git wget m4 
+	yum -y install mpich
+	yum -y install python3
+
+	git clone https://github.com/su2code/SU2.git
+	cd SU2/
+	./meson.py build -Denable-autodiff=true --prefix=/opt/SU2
+	./ninja -C build install
+	
+%environment
+	export SU2_RUN=/opt/SU2/bin
+	export SU2_HOME=/root/SU2
+    export PATH=$PATH:$SU2_RUN
+    export PYTHONPATH=$PYTHONPATH:$SU2_RUN
+
+%runscript
+	echo "Container is running and ready to execute SU2"
+	
+%labels
+
+	Author cramirez@rescale.com
+	Version 1.0.0
+	SU2version v7.0.1
+	
